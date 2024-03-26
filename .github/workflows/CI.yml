@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  repository_dispatch:
+    types: [run_build, run_release]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os[0] }}
+    strategy:
+      matrix:
+        os: [[macos-latest, bash], [ubuntu-latest, bash], [windows-latest, msys2]]
+      fail-fast: false
+    defaults:
+     run:
+      shell: ${{ matrix.os[1] }} {0}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install MSYS2 packages
+      if: matrix.os[0] == 'windows-latest'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MINGW32
+        install: |
+          base-devel mingw-w64-i686-gcc
+        update: true
+        shell: msys2 {0}
+
+    - name: Compile bin2c
+      run: |
+        make clean all
+
+    - name: Print usage
+      run: |
+        ./bin2c || true
