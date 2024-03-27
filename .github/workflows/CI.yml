@@ -31,7 +31,6 @@ jobs:
         install: |
           base-devel mingw-w64-i686-gcc
         update: true
-        shell: msys2 {0}
 
     - name: Compile bin2c
       run: |
